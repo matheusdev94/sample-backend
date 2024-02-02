@@ -1,0 +1,29 @@
+# Arquivos temporários
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Arquivos gerados durante o build
+build/
+dist/
+
+# Dependências específicas do sistema
+.DS_Store
+Thumbs.db
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.*.local
+
+# Arquivos de configuração
+.vscode/
+.idea/
+
+# Arquivos de log
+*.log
+logs/
+
+# Arquivos de backup
+*.bak
+*.backup
