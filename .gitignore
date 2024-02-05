@@ -27,3 +27,29 @@ logs/
 # Arquivos de backup
 *.bak
 *.backup
+
+
+
+# Dependências
+/node_modules
+
+# Arquivos temporários
+npm-debug.log
+yarn-error.log
+*.log
+
+# Diretórios específicos
+/dist
+/build
+
+# Arquivos de configuração
+.env
+.env.local
+.env.*.local
+
+# Outros arquivos e diretórios gerados
+.DS_Store
+Thumbs.db
+.cache
+.history
+
