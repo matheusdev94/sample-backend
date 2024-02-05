@@ -1,20 +1,26 @@
-const express = require("express");
-app = express();
-const path = require("path");
-const { logger } = require("./middleware/logEvents");
-const { errorHandler } = require("./middleware/errorHandler");
-const PORT = process.env.PORT || 3500;
-const cors = require("cors");
-const corsOptions = require("./config/corsOption");
-const mongoose = require("mongoose");
-const connectDB = require("./config/dbConn");
-
 require("dotenv").config();
 
+const express = require("express");
+app = express();
+
+const path = require("path");
+const PORT = process.env.PORT || 3500;
+
+const cors = require("cors");
+const corsOptions = require("./config/corsOption");
+app.use(cors(corsOptions));
+
+const { logger } = require("./middleware/logEvents");
+const { errorHandler } = require("./middleware/errorHandler");
+app.use(logger);
+
+const mongoose = require("mongoose");
+const connectDB = require("./config/dbConn");
 connectDB();
 
-app.use(logger);
-app.use(cors(corsOptions));
+const cookieParser = require("cookie-parser");
+app.use(cookieParser());
+
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "/public")));
@@ -24,6 +30,12 @@ app.use("/register", require("./routes/controller/register"));
 app.use("/auth", require("./routes/controller/auth"));
 app.use("/refresh", require("./routes/controller/refresh"));
 app.use("/logout", require("./routes/controller/logout"));
+
+const verifyJWT = require("./middleware/verifyJWT");
+app.use(verifyJWT);
+
+const verifyRoles = require("./middleware/verifyRoles");
+app.use(verifyRoles);
 
 app.use("/employees", require("./routes/api/employees"));
 
@@ -38,7 +50,6 @@ app.all("*", (req, res) => {
   }
 });
 
-//middleware para geração de logs de erro:
 app.use(errorHandler);
 
 mongoose.connection.on("connected", () => {
