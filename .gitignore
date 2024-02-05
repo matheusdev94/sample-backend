@@ -53,3 +53,6 @@ Thumbs.db
 .cache
 .history
 
+*package-lock.json
+
+*/logs
