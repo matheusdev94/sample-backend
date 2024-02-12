@@ -16,7 +16,7 @@ app.use(logger);
 
 const mongoose = require("mongoose");
 const connectDB = require("./config/dbConn");
-connectDB();
+// connectDB();
 
 const cookieParser = require("cookie-parser");
 app.use(cookieParser());
@@ -37,6 +37,7 @@ app.use(verifyJWT);
 const verifyRoles = require("./middleware/verifyRoles");
 app.use(verifyRoles);
 
+// app.use("/users", require("./routes/controller/users"));
 app.use("/employees", require("./routes/api/employees"));
 
 app.all("*", (req, res) => {
@@ -52,13 +53,15 @@ app.all("*", (req, res) => {
 
 app.use(errorHandler);
 
-mongoose.connection.on("connected", () => {
-  console.log("MongoDB connected");
-  app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-});
-mongoose.connection.on("error", (err) => {
-  console.error(`Error on MongoDB Connection: ${err}`);
-});
-mongoose.connection.on("disconnected", () => {
-  console.log("MongoDB disconnected");
-});
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
+// mongoose.connection.on("connected", () => {
+//   console.log("MongoDB connected");
+//   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+// });
+// mongoose.connection.on("error", (err) => {
+//   console.error(`Error on MongoDB Connection: ${err}`);
+// });
+// mongoose.connection.on("disconnected", () => {
+//   console.log("MongoDB disconnected");
+// });
