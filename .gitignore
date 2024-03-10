@@ -56,3 +56,7 @@ Thumbs.db
 *package-lock.json
 
 */logs
+
+# development files
+*notes.txt
+*users.json
