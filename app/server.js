@@ -1,24 +1,24 @@
 require("dotenv").config();
-
 const express = require("express");
-app = express();
-
 const path = require("path");
-const PORT = process.env.PORT || 3500;
-
+const credentials = require("./middleware/credentials");
 const cors = require("cors");
 const corsOptions = require("./config/corsOption");
-app.use(cors(corsOptions));
-
 const { logger } = require("./middleware/logEvents");
 const { errorHandler } = require("./middleware/errorHandler");
-app.use(logger);
-
 const mongoose = require("mongoose");
 const connectDB = require("./config/dbConn");
+const cookieParser = require("cookie-parser");
+const verifyJWT = require("./middleware/verifyToken");
+const verifyRoles = require("./middleware/verifyRoles");
+
+app = express();
 connectDB();
 
-const cookieParser = require("cookie-parser");
+app.use(credentials);
+app.use(cors(corsOptions));
+app.use(logger);
+
 app.use(cookieParser());
 
 app.use(express.urlencoded({ extended: false }));
@@ -27,16 +27,18 @@ app.use(express.static(path.join(__dirname, "/public")));
 
 app.use("/", require("./routes/root"));
 app.use("/register", require("./routes/controller/register"));
+app.use(
+  "/registerAdminEditor",
+  require("./routes/controller/registerAdminEditor")
+);
 app.use("/auth", require("./routes/controller/auth"));
 app.use("/refresh", require("./routes/controller/refresh"));
 app.use("/logout", require("./routes/controller/logout"));
 
-const verifyJWT = require("./middleware/verifyJWT");
 app.use(verifyJWT);
-
-const verifyRoles = require("./middleware/verifyRoles");
 app.use(verifyRoles);
 
+app.use("/users", require("./routes/api/users"));
 app.use("/employees", require("./routes/api/employees"));
 
 app.all("*", (req, res) => {
@@ -52,12 +54,13 @@ app.all("*", (req, res) => {
 
 app.use(errorHandler);
 
+const PORT = process.env.PORT || 3500;
 mongoose.connection.on("connected", () => {
   console.log("MongoDB connected");
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 });
 mongoose.connection.on("error", (err) => {
-  console.error(`Error on MongoDB Connection: ${err}`);
+  console.error(`Error on MongoDB Conne   ction: ${err}`);
 });
 mongoose.connection.on("disconnected", () => {
   console.log("MongoDB disconnected");
