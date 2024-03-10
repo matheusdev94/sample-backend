@@ -1,38 +1,54 @@
 const bcrypt = require("bcrypt");
 const User = require("../model/User");
 
+const sendResponseWithTimer = require("../utils/response");
+
+const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
+const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
+
 const handleUserRegistration = async (req, res) => {
+  const beginTime = new Date().getTime();
+  let response = null;
+  let statusCode = null;
+
   try {
     const { username, password } = req.body;
 
-    // Check if the username already exists
-    const existingUser = await User.findOne({ username });
+    if (!USER_REGEX.test(username) || !PWD_REGEX.test(password)) {
+      statusCode = 403;
+      response = { error: "Invalid Credentials" };
+    } else {
+      const existingUser = await User.findOne({ username });
 
-    if (existingUser) {
-      return res.status(409).json({ error: "Username already exists" });
+      if (existingUser) {
+        statusCode = 403;
+        response = { error: "Invalid Credentials" };
+      } else {
+        const saltRounds = 10;
+        const hashedPassword = await bcrypt.hash(password, saltRounds);
+
+        const newUser = new User({
+          username: username,
+          password: hashedPassword,
+        });
+        const savedUser = await newUser.save();
+        if (savedUser) {
+          statusCode = 201;
+          response = { message: "ok" };
+        } else {
+          statusCode = 500;
+          response = { error: "Unexpected error occur." };
+        }
+      }
     }
-
-    // Hash the password
-    const saltRounds = 10;
-    const hashedPassword = await bcrypt.hash(password, saltRounds);
-
-    // Create a new user with hashed password
-    const newUser = new User({
-      username: username,
-      password: hashedPassword,
-    });
-
-    // Save the user to the database
-    const savedUser = await newUser.save();
-
-    // Exclude password from the response
-    const userResponse = savedUser.toObject();
-    delete userResponse.password;
-
-    res.status(201).json(userResponse);
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    statusCode = 500;
+    response = { error: "Unexpected error occur." };
+    console.error("erro on the registerContoller", error.message);
   }
+  const finishTime = new Date().getTime();
+
+  sendResponseWithTimer(res, response, statusCode, finishTime - beginTime);
 };
 
 module.exports = {
