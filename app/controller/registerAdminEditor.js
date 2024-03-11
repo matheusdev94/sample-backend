@@ -10,7 +10,6 @@ const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
 const API_KEY = process.env.API_KEY;
 
 const handleAdminEditorRegistration = async (req, res) => {
-  console.log("AQUIiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiiii");
   const beginTime = new Date().getTime();
   let responseMessage = null;
   let statusCode = null;
@@ -22,17 +21,17 @@ const handleAdminEditorRegistration = async (req, res) => {
 
     if (!isApiKeyValid) {
       statusCode = 403;
-      responseMessage = { error: "Invalid Credentials1" };
+      responseMessage = { error: "Invalid Credentials" };
     } else {
       if (!USER_REGEX.test(username) || !PWD_REGEX.test(password)) {
         statusCode = 403;
-        responseMessage = { error: "Invalid Credentials2" };
+        responseMessage = { error: "Invalid Credentials" };
       } else {
         const existingUser = await User.findOne({ username });
 
         if (existingUser) {
           statusCode = 403;
-          responseMessage = { error: "Invalid Credentials3" };
+          responseMessage = { error: "Invalid Credentials" };
         } else {
           const saltRounds = 10;
           const hashedPassword = await bcrypt.hash(password, saltRounds);
@@ -59,7 +58,6 @@ const handleAdminEditorRegistration = async (req, res) => {
     console.error("erro on the registerContoller", error.message);
   }
   const finishTime = new Date().getTime();
-  console.log(responseMessage);
   sendResponseWithTimer(
     res,
     responseMessage,

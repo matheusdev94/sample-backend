@@ -21,7 +21,7 @@ const logEvents = async (message, file) => {
       logItem
     );
   } catch (err) {
-    console.log(err);
+    console.error(err);
   }
 };
 const logger = (req, res, next) => {
