@@ -1,4 +1,4 @@
-require("dotenv").config();
+require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
 const express = require("express");
 const path = require("path");
 const credentials = require("./middleware/credentials");
@@ -11,10 +11,12 @@ const connectDB = require("./config/dbConn");
 const cookieParser = require("cookie-parser");
 const verifyJWT = require("./middleware/verifyToken");
 const verifyRoles = require("./middleware/verifyRoles");
+const verifyRequest = require("./middleware/verifyRequest");
 
 app = express();
 connectDB();
 
+app.use(verifyRequest);
 app.use(credentials);
 app.use(cors(corsOptions));
 app.use(logger);
@@ -25,15 +27,14 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, "/public")));
 
+// app.use("/registerAdminEditor",require("./routes/controller/registerAdminEditor"));
 app.use("/", require("./routes/root"));
-app.use("/register", require("./routes/controller/register"));
-app.use(
-  "/registerAdminEditor",
-  require("./routes/controller/registerAdminEditor")
-);
 app.use("/auth", require("./routes/controller/auth"));
 app.use("/refresh", require("./routes/controller/refresh"));
 app.use("/logout", require("./routes/controller/logout"));
+
+app.use("/register", require("./routes/controller/register"));
+// app.use("/user", require("./routes/controller/user"));
 
 app.use(verifyJWT);
 app.use(verifyRoles);
@@ -55,6 +56,8 @@ app.all("*", (req, res) => {
 app.use(errorHandler);
 
 const PORT = process.env.PORT || 3500;
+// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+
 mongoose.connection.on("connected", () => {
   console.log("MongoDB connected");
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
