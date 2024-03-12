@@ -1,16 +1,9 @@
 const fsPromisses = require("fs").promises;
-const writteFile = async (data) => {
-  fsPromisses.writeFile(
-    path.join(__dirname, "..", "data", "users.json"),
-    data,
-    "utf-8"
-  );
+const writteFile = async (data, path) => {
+  fsPromisses.writeFile(path, data, "utf-8");
 };
-const loadFile = async () => {
-  fsPromisses.readFile(
-    path.join(__dirname, "..", "data", "users.json"),
-    "utf-8"
-  );
+const loadFile = async (path) => {
+  fsPromisses.readFile(path, "utf-8");
   return loadFile;
 };
 
