@@ -1,4 +1,4 @@
-require("dotenv").config({ path: ".env.test" });
+// require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
 const auth = require("../controller/authController");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcrypt");
