@@ -34,7 +34,7 @@ app.use("/refresh", require("./routes/controller/refresh"));
 app.use("/logout", require("./routes/controller/logout"));
 
 app.use("/register", require("./routes/controller/register"));
-// app.use("/user", require("./routes/controller/user"));
+app.use("/form", require("./routes/controller/antiCsrf"));
 
 app.use(verifyJWT);
 app.use(verifyRoles);
@@ -57,7 +57,6 @@ app.use(errorHandler);
 
 const PORT = process.env.PORT || 3500;
 // app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
-
 mongoose.connection.on("connected", () => {
   console.log("MongoDB connected");
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
@@ -68,3 +67,4 @@ mongoose.connection.on("error", (err) => {
 mongoose.connection.on("disconnected", () => {
   console.log("MongoDB disconnected");
 });
+//
