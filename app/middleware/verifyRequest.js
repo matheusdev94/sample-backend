@@ -10,8 +10,8 @@ const verifyRequest = async (req, res, next) => {
 
   const ipVerify = await verifyBlockList(ip);
 
-  if (ipVerify === "banned") {
-    console.log("BANNED");
+  if (ipVerify) {
+    console.log(ipVerify);
     return res.sendStatus(403);
   } else {
     await ipVerification(ip);
@@ -97,13 +97,13 @@ const verifyBlockList = async (currentIp) => {
       // Verifica se o arquivo permanente existe antes de ler
       if (fs.existsSync(permantentFilePath)) {
         const data = await fsPromises.readFile(permantentFilePath, "utf-8");
-        if (data.includes(currentIp)) return "banned";
+        if (data.includes(currentIp)) return `IP ${ip}: banned permantently`;
       }
 
       // Verifica se o arquivo temporário existe antes de ler
       if (fs.existsSync(temporaryFilePath)) {
         const data = await fsPromises.readFile(temporaryFilePath, "utf-8");
-        if (data.includes(currentIp)) return "banned";
+        if (data.includes(currentIp)) return `IP ${ip}: banned temporarily`;
       }
     };
 
