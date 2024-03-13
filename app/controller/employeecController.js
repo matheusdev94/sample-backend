@@ -1,21 +1,38 @@
+const jwt = require("jsonwebtoken");
 const Employee = require("../model/Employees");
-
-const createEmployee = async (req, res) => {
-  try {
-    const { firstname, lastname } = req.body;
-    const newEmployee = new Employee({ firstname, lastname });
-    const savedEmployee = await newEmployee.save();
-    res.status(201).json(savedEmployee);
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
-};
 
 const getEmployees = async (req, res) => {
   try {
     const employees = await Employee.find();
     res.status(200).json(employees);
   } catch (error) {
+    res.status(500).json({ error: error.message });
+  }
+};
+const createEmployee = async (req, res) => {
+  try {
+    const anticsrf = req.headers.anticsrf;
+
+    if (!anticsrf) {
+      return res.status(403);
+    }
+    jwt.verify(anticsrf, process.env.ANTI_CSRF_SECRET, async (err) => {
+      if (err) {
+        return res.status(403);
+      } else {
+        console.log("rb: ", req.body);
+        const { firstname, lastname } = req.body;
+
+        const newEmployee = new Employee({
+          firstname: firstname,
+          lastname: lastname,
+        });
+        await newEmployee.save();
+        res.status(201).json(newEmployee);
+      }
+    });
+  } catch (error) {
+    console.error("err on add empl: ", error.message);
     res.status(500).json({ error: error.message });
   }
 };
@@ -53,7 +70,7 @@ const updateEmployee = async (req, res) => {
 
 const deleteEmployee = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.body;
     const deletedEmployee = await Employee.findByIdAndDelete(id);
     if (!deletedEmployee) {
       return res.status(404).json({ error: "Employee not found" });

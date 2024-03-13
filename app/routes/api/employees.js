@@ -4,9 +4,9 @@ const employeeController = require("../../controller/employeecController");
 router
   .route("/")
   .get(employeeController.getEmployees)
-  .post(employeeController.getEmployees)
-  .put(employeeController.createEmployee)
+  .post(employeeController.createEmployee)
+  // .put(employeeController.createEmployee)
   .delete(employeeController.deleteEmployee);
-
+router.route("/delete").post(employeeController.deleteEmployee);
 router.route("/:id").get(employeeController.getEmployeeById);
 module.exports = router;
