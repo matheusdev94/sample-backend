@@ -1,9 +1,11 @@
 import requests
 
 i=0
-while(i<300):
-    response = requests.get("http://localhost:3500",headers={"origin":"http://localhost:3500"})
-    print(i,response.status_code)
+
+while(i<3000):
+    headers = {"origin":"http://localhost:3500",'user-agent':'mozilla'}
+    response = requests.get("http://localhost:3500",headers=headers)
+    print(f"Nº: {i} status_code: {response.status_code}")
 
 
-    # i=i+1
+    i=i+1

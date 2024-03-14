@@ -2,28 +2,47 @@ const { format } = require("date-fns");
 const fs = require("fs");
 const fsPromises = require("fs").promises;
 const path = require("path");
+const allowedUserAgents = require("../config/allowedUserAgents");
 
-const dateTime = `${format(new Date(), format(new Date(), "yyyy-MM-dd"))}`;
+const todayDate = `${format(new Date(), format(new Date(), "yyyy-MM-dd"))}`;
 
+const isUserAgentAllowed = (userAgent) => {
+  // Converter o agente do usuário para minúsculas para corresponder independentemente de maiúsculas e minúsculas
+  userAgent = String(userAgent).toLowerCase();
+
+  // Verificar se o agente do usuário contém pelo menos uma das strings permitidas
+  for (let allowedAgent of allowedUserAgents) {
+    if (userAgent.includes(allowedAgent)) {
+      return true;
+    }
+  }
+  return false;
+};
 const verifyRequest = async (req, res, next) => {
   const ip = req.ip;
-
+  const userAgent = req.headers["user-agent"];
   const ipVerify = await verifyBlockList(ip);
+
+  if (!isUserAgentAllowed(userAgent)) {
+    console.log(`${ip} trying to shut down the server`);
+    return res.sendStatus(403);
+  }
 
   if (ipVerify) {
     console.log(ipVerify);
     return res.sendStatus(403);
   } else {
-    await ipVerification(ip);
+    await ipVerification(req);
     next();
   }
 };
-const ipVerification = async (currentIp) => {
+const ipVerification = async (req) => {
+  const currentIp = req.ip;
   const filePath = path.join(
     __dirname,
     "..",
     "logs",
-    `${dateTime}-eventLog.txt`
+    `${todayDate}-eventLog.txt`
   );
   // Função que retorna uma Promise para ler o arquivo
   const readLogFile = () => {
@@ -61,10 +80,10 @@ const ipVerification = async (currentIp) => {
             countOfCallsByMinute++;
           }
           if (countOfCallsByMinute >= process.env.MAX_REQUEST_BY_MINUTE) {
-            writeExcluded(currentIp, true);
+            writeExcluded(req, true);
           }
           if (countOfCallsByDay >= process.env.MAX_REQUEST_BY_DAY) {
-            writeExcluded(currentIp, false);
+            writeExcluded(req, false);
           }
         }
       }
@@ -86,9 +105,8 @@ const verifyBlockList = async (currentIp) => {
       __dirname,
       "..",
       "logs",
-      `${dateTime}-excludeListDay.txt`
+      `${todayDate}-excludeListDay.txt`
     );
-
     const readBanFile = async () => {
       if (!fs.existsSync(dirPath)) {
         await fsPromises.mkdir(dirPath);
@@ -97,13 +115,15 @@ const verifyBlockList = async (currentIp) => {
       // Verifica se o arquivo permanente existe antes de ler
       if (fs.existsSync(permantentFilePath)) {
         const data = await fsPromises.readFile(permantentFilePath, "utf-8");
-        if (data.includes(currentIp)) return `IP ${ip}: banned permantently`;
+        if (data.includes(currentIp))
+          return `IP ${currentIp}: banned permantently`;
       }
 
       // Verifica se o arquivo temporário existe antes de ler
       if (fs.existsSync(temporaryFilePath)) {
         const data = await fsPromises.readFile(temporaryFilePath, "utf-8");
-        if (data.includes(currentIp)) return `IP ${ip}: banned temporarily`;
+        if (data.includes(currentIp))
+          return `IP ${currentIp}: banned temporarily`;
       }
     };
 
@@ -114,7 +134,8 @@ const verifyBlockList = async (currentIp) => {
   }
 };
 
-const writeExcluded = async (ip, permanent) => {
+const writeExcluded = async (req, permanent) => {
+  const ip = req.ip;
   const dirPath = path.join(__dirname, "..", "logs");
   const permantentFilePath = path.join(
     __dirname,
@@ -126,11 +147,15 @@ const writeExcluded = async (ip, permanent) => {
     __dirname,
     "..",
     "logs",
-    `${dateTime}-excludeListDay.txt`
+    `${todayDate}-excludeListDay.txt`
   );
 
+  const timeNow = `${format(
+    new Date(),
+    format(new Date(), "yyyy-MM-dd|HH:mm:ss")
+  )}`;
   try {
-    const item = `${ip}\n`;
+    const item = `${timeNow}|${ip}|${req.url}\n`;
 
     if (!fs.existsSync(dirPath)) {
       await fsPromises.mkdir(dirPath);
