@@ -23,7 +23,10 @@ const handleLogout = async (req, res) => {
 
     user.refreshToken = "";
 
-    await user.save();
+    await user.updateOne({
+      _id: user.id,
+      refreshToken: "",
+    });
 
     res.cookie("jwt", "", {
       httpOnly: true,

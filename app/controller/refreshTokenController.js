@@ -6,14 +6,10 @@ const handleRefreshToken = async (req, res) => {
   try {
     const cookies = req.cookies;
     const refreshToken = cookies.jwt;
-    console.log(cookies);
+
     const foundUser =
       (await Users.findOne({ refreshToken: refreshToken })) ||
       (await UserGoogleOauth.findOne({ refreshToken: refreshToken }));
-
-    // const foundUser = await UserGoogleOauth.findOne({ refreshToken });
-
-    console.log("FU:", foundUser);
 
     if (foundUser) {
       jwt.verify(
