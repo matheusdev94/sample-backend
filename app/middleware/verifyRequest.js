@@ -29,7 +29,6 @@ const verifyRequest = async (req, res, next) => {
   }
 
   if (ipVerify) {
-    console.log(ipVerify);
     return res.sendStatus(403);
   } else {
     await ipVerification(req);

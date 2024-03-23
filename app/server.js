@@ -1,46 +1,70 @@
 require("dotenv").config({ path: `.env.${process.env.NODE_ENV}` });
-const express = require("express");
-const path = require("path");
-const credentials = require("./middleware/credentials");
-const cors = require("cors");
+const PORT = process.env.PORT || 3500;
+
 const corsOptions = require("./config/corsOption");
-const { logger } = require("./middleware/logEvents");
-const { errorHandler } = require("./middleware/errorHandler");
-const mongoose = require("mongoose");
 const connectDB = require("./config/dbConn");
+
+// const GoogleStrategy = require("passport-google-oauth").OAuth2Strategy;
 const cookieParser = require("cookie-parser");
-const verifyJWT = require("./middleware/verifyToken");
-const verifyRoles = require("./middleware/verifyRoles");
+const mongoose = require("mongoose");
+const passport = require("passport");
+const express = require("express");
+const helmet = require("helmet");
+const cors = require("cors");
+const path = require("path");
+
+const passportSetup = require("./utils/googlePassport");
+const { errorHandler } = require("./middleware/errorHandler");
 const verifyRequest = require("./middleware/verifyRequest");
+const verifyRoles = require("./middleware/verifyRoles");
+const credentials = require("./middleware/credentials");
+const verifyJWT = require("./middleware/verifyToken");
+const { logger } = require("./middleware/logEvents");
 
 app = express();
 connectDB();
+const cookieSession = require("cookie-session");
+// app.use(
+//   cookieSession({
+//     name: "session",
+//     keys: ["cyberwolve"],
+//     maxAge: 24 * 60 * 60 * 100,
+//   })
+// );
 
+const session = require("express-session");
+app.use(
+  session({
+    secret: process.env.SESSION_SECRET,
+    resave: false,
+    saveUninitialized: true,
+  })
+);
+
+app.use(passport.initialize());
+app.use(passport.session());
+
+app.use(helmet({ xssFilter: true }));
 app.use(verifyRequest);
 app.use(credentials);
 app.use(cors(corsOptions));
 app.use(logger);
-
 app.use(cookieParser());
-
-app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
-app.use(express.static(path.join(__dirname, "/public")));
-
-// app.use("/registerAdminEditor",require("./routes/controller/registerAdminEditor"));
-app.use("/", require("./routes/root"));
-app.use("/auth", require("./routes/controller/auth"));
-app.use("/refresh", require("./routes/controller/refresh"));
-app.use("/logout", require("./routes/controller/logout"));
+app.use(express.urlencoded({ extended: false }));
 
 app.use("/register", require("./routes/controller/register"));
-app.use("/form", require("./routes/controller/antiCsrf"));
+app.use("/refresh", require("./routes/controller/refresh"));
+app.use("/logout", require("./routes/controller/logout"));
+app.use("/auth", require("./routes/controller/auth"));
+app.use("/", require("./routes/root"));
 
 app.use(verifyJWT);
 app.use(verifyRoles);
 
-app.use("/users", require("./routes/api/users"));
+app.use("/form", require("./routes/controller/antiCsrf"));
 app.use("/employees", require("./routes/api/employees"));
+app.use("/users", require("./routes/api/users"));
 
 app.all("*", (req, res) => {
   res.status(404);
@@ -55,8 +79,6 @@ app.all("*", (req, res) => {
 
 app.use(errorHandler);
 
-const PORT = process.env.PORT || 3500;
-// app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
 mongoose.connection.on("connected", () => {
   console.log("MongoDB connected");
   app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

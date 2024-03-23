@@ -1,11 +1,19 @@
 const Users = require("../model/User");
 const jwt = require("jsonwebtoken");
+const UserGoogleOauth = require("../model/UserGoogleOauth");
 
 const handleRefreshToken = async (req, res) => {
   try {
     const cookies = req.cookies;
     const refreshToken = cookies.jwt;
-    const foundUser = await Users.findOne({ refreshToken });
+    console.log(cookies);
+    const foundUser =
+      (await Users.findOne({ refreshToken: refreshToken })) ||
+      (await UserGoogleOauth.findOne({ refreshToken: refreshToken }));
+
+    // const foundUser = await UserGoogleOauth.findOne({ refreshToken });
+
+    console.log("FU:", foundUser);
 
     if (foundUser) {
       jwt.verify(
@@ -15,9 +23,7 @@ const handleRefreshToken = async (req, res) => {
           if (err || foundUser.username !== decoded.username) {
             return res.status(401).json({ message: "Unauthorized" });
           }
-
           const roles = Object.values(foundUser.roles);
-
           const accessToken = jwt.sign(
             {
               UserInfo: {
@@ -26,7 +32,7 @@ const handleRefreshToken = async (req, res) => {
               },
             },
             process.env.ACCESS_TOKEN_SECRET,
-            { expiresIn: "2m" }
+            { expiresIn: "60s" }
           );
 
           return res.status(200).json({

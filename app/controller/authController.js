@@ -1,10 +1,31 @@
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const Users = require("../model/User");
 const sendResponseWithTimer = require("../utils/responseHandler");
+const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const Users = require("../model/User");
+const passport = require("passport");
+const jwt = require("jsonwebtoken");
+const bcrypt = require("bcrypt");
+const crypto = require("crypto");
+const User = require("../model/User");
 
 const USER_REGEX = /^[A-z][A-z0-9-_]{3,23}$/;
 const PWD_REGEX = /^(?=.*[a-z])(?=.*[A-Z])(?=.*[0-9])(?=.*[!@#$%]).{8,24}$/;
+
+const handleGoogleOauth = async (req, res) => {
+  try {
+  } catch (e) {
+    console.log("erro: ", e);
+    statusCode = 500;
+    response = { error: "Unexpected error occur." };
+  }
+  const finishTime = new Date().getTime();
+  const responseFeedback = await sendResponseWithTimer(
+    res,
+    response,
+    statusCode,
+    finishTime - beginTime
+  );
+  return responseFeedback;
+};
 
 const handleAuthentication = async (req, res) => {
   const beginTime = new Date().getTime();
@@ -82,6 +103,17 @@ const handleAuthentication = async (req, res) => {
   return { statusCode, response, sendFeedBack };
 };
 
+const getOAuthLink = (req, res) => {
+  const state = crypto.randomBytes(16).toString("hex");
+  const client_id = process.env.GOOGLE_CLIENT_ID;
+  const domain = "http://localhost:3500";
+
+  const link = `https://accounts.google.com/o/oauth2/auth?scope=https://www.googleapis.com/auth/cloud-platform&response_type=code&access_type=offline&state=${state}&redirect_uri=${domain}/auth/google/callback&client_id=${client_id}`;
+  return res.status(200).json({ redirectUrl: link });
+};
+
 module.exports = {
   handleAuthentication,
+  getOAuthLink,
+  handleGoogleOauth,
 };

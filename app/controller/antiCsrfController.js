@@ -19,7 +19,6 @@ const createAntiCsrf = async (req, res) => {
     },
     process.env.ANTI_CSRF_SECRET
   );
-  console.log("ANTI CSRF CRIADO : ", token);
   return res.status(200).json({ formToken: token });
 };
 module.exports = { createAntiCsrf };

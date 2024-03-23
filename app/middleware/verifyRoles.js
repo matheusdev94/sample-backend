@@ -15,6 +15,7 @@ const verifyRoles = (req, res, next) => {
   if (!result) {
     return res.sendStatus(401);
   }
+
   next();
 };
 module.exports = verifyRoles;

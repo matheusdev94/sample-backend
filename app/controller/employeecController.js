@@ -20,7 +20,6 @@ const createEmployee = async (req, res) => {
       if (err) {
         return res.status(403);
       } else {
-        console.log("rb: ", req.body);
         const { firstname, lastname } = req.body;
 
         const newEmployee = new Employee({
