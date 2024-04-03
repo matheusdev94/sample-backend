@@ -128,3 +128,67 @@ dist
 .yarn/build-state.yml
 .yarn/install-state.gz
 .pnp.*
+=======
+# Arquivos temporários
+node_modules/
+npm-debug.log
+yarn-error.log
+
+# Arquivos gerados durante o build
+build/
+dist/
+
+# Dependências específicas do sistema
+.DS_Store
+Thumbs.db
+
+# Variáveis de ambiente
+.env
+.env.local
+.env.*.local
+.env.*
+
+# Arquivos de configuração
+.vscode/
+.idea/
+
+# Arquivos de log
+*.log
+logs/
+
+# Arquivos de backup
+*.bak
+*.backup
+
+
+
+# Dependências
+/node_modules
+
+# Arquivos temporários
+npm-debug.log
+yarn-error.log
+*.log
+
+# Diretórios específicos
+/dist
+/build
+
+# Arquivos de configuração
+.env
+.env.local
+.env.*.local
+
+# Outros arquivos e diretórios gerados
+.DS_Store
+Thumbs.db
+.cache
+.history
+
+*package-lock.json
+
+*/logs
+
+# development files
+*notes.txt
+*users.json

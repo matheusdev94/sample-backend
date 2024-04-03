@@ -1,0 +1,10 @@
+version: "3"
+services:
+  node_backend_web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "3500:3500"
+    env_file:
+      - app/.env
