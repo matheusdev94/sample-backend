@@ -4,11 +4,9 @@ const verifyRoles = (req, res, next) => {
   const userRoles = req.roles;
 
   let result = false;
-  const verificatedRoles = [];
-  for (const [role, roleID] of Object.entries(ROLES_LIST)) {
-    if (userRoles.includes(roleID)) {
-      // rolesVerification[role] = userRoles.includes(roleID);
-      verificatedRoles.push(roleID);
+  console.log("ROLES: ", typeof userRoles);
+  for (let index in userRoles) {
+    if (userRoles[index] === 5150) {
       result = true;
     }
   }

@@ -13,9 +13,10 @@ const helmet = require("helmet");
 const cors = require("cors");
 const path = require("path");
 
-const passportSetup = require("./utils/googlePassport");
+// const passportSetup = require("./utils/googlePassport");
 const { errorHandler } = require("./middleware/errorHandler");
 const verifyRequest = require("./middleware/verifyRequest");
+const csrfVerify = require("./middleware/verifyAntiCsrf");
 const verifyRoles = require("./middleware/verifyRoles");
 const credentials = require("./middleware/credentials");
 const verifyJWT = require("./middleware/verifyToken");
@@ -23,7 +24,7 @@ const { logger } = require("./middleware/logEvents");
 
 app = express();
 connectDB();
-const cookieSession = require("cookie-session");
+// const cookieSession = require("cookie-session");
 // app.use(
 //   cookieSession({
 //     name: "session",
@@ -32,17 +33,17 @@ const cookieSession = require("cookie-session");
 //   })
 // );
 
-const session = require("express-session");
-app.use(
-  session({
-    secret: process.env.SESSION_SECRET,
-    resave: false,
-    saveUninitialized: true,
-  })
-);
+// const session = require("express-session");
+// app.use(
+//   session({
+//     secret: process.env.SESSION_SECRET,
+//     resave: false,
+//     saveUninitialized: true,
+//   })
+// );
 
-app.use(passport.initialize());
-app.use(passport.session());
+// app.use(passport.initialize());
+// app.use(passport.session());
 
 app.use(helmet({ xssFilter: true }));
 app.use(verifyRequest);
@@ -53,16 +54,20 @@ app.use(cookieParser());
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
-app.use("/register", require("./routes/controller/register"));
+// app.use("/register", require("./routes/controller/register"));
 app.use("/refresh", require("./routes/controller/refresh"));
 app.use("/logout", require("./routes/controller/logout"));
 app.use("/auth", require("./routes/controller/auth"));
 app.use("/", require("./routes/root"));
 
+app.use("/form", require("./routes/controller/antiCsrf"));
+
+app.use(csrfVerify);
+app.use("/registerContact", require("./routes/controller/contact"));
+
 app.use(verifyJWT);
 app.use(verifyRoles);
-
-app.use("/form", require("./routes/controller/antiCsrf"));
+app.use("/listContact", require("./routes/controller/contactList"));
 app.use("/employees", require("./routes/api/employees"));
 app.use("/users", require("./routes/api/users"));
 
